@@ -9,6 +9,36 @@ declare global {
     value: string;
   }
 
+  interface FolderDocument extends Models.Document {
+    name: string;
+    owner: Models.Document & { fullName: string };
+    accountId: string;
+    parent: string | null;
+  }
+
+  interface CreateFolderProps {
+    name: string;
+    ownerId: string;
+    accountId: string;
+    parent?: string | null;
+    path: string;
+  }
+  
+  interface GetFoldersProps {
+    parent?: string | null;
+  }
+
+  interface RenameFolderProps {
+    folderId: string;
+    name: string;
+    path: string;
+  }
+
+  interface DeleteFolderProps {
+    folderId: string;
+    path: string;
+  }
+
   interface SearchParamProps {
     params?: Promise<SegmentParams>;
     searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
@@ -18,6 +48,7 @@ declare global {
     file: File;
     ownerId: string;
     accountId: string;
+    parent?: string | null;
     path: string;
   }
   interface GetFilesProps {
@@ -25,6 +56,7 @@ declare global {
     searchText?: string;
     sort?: string;
     limit?: number;
+    parent?: string | null;
   }
   interface RenameFileProps {
     fileId: string;
@@ -86,6 +118,7 @@ declare global {
     accountId: string;
     users: string[];
     bucketFileId: string;
+    parent: string | null;
   }
 }
 
