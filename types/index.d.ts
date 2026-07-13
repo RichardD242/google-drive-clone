@@ -79,6 +79,14 @@ declare global {
     bucketFileId: string;
     path: string;
   }
+  interface TrashFileProps {
+    fileId: string;
+    path: string;
+  }
+  interface RestoreFileProps {
+    fileId: string;
+    path: string;
+  }
 
   interface FileUploaderProps {
     ownerId: string;
@@ -125,6 +133,7 @@ declare global {
     bucketFileId: string;
     parent: string | null;
     parentName: string | null;
+    trashed: boolean;
   }
 }
 

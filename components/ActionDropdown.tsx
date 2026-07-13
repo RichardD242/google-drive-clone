@@ -30,9 +30,9 @@ import { constructDownloadUrl } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
-  deleteFile,
   moveFile,
   renameFile,
+  trashFile,
   updateFileUsers,
 } from "@/lib/actions/file.actions";
 import { createFolder, getFolders } from "@/lib/actions/folder.actions";
@@ -79,8 +79,7 @@ const ActionDropdown = ({ file }: { file: FileDocument }) => {
       rename: () =>
         renameFile({ fileId: file.$id, name, extension: file.extension, path }),
       share: () => updateFileUsers({ fileId: file.$id, emails, path }),
-      delete: () =>
-        deleteFile({ fileId: file.$id, bucketFileId: file.bucketFileId, path }),
+      trash: () => trashFile({ fileId: file.$id, path }),
       move: () =>
         moveFile({ fileId: file.$id, parent: selectedFolderId || null, path }),
     };
@@ -150,10 +149,10 @@ const ActionDropdown = ({ file }: { file: FileDocument }) => {
               onRemove={handleRemoveUser}
             />
           )}
-          {value === "delete" && (
+          {value === "trash" && (
             <p className="delete-confirmation">
-              are you sure you want to delete{` `}
-              <span className="delete-file-name">{file.name}</span>?
+              are you sure you want to move{` `}
+              <span className="delete-file-name">{file.name}</span> to trash?
             </p>
           )}
           {value === "move" && (
@@ -195,7 +194,7 @@ const ActionDropdown = ({ file }: { file: FileDocument }) => {
             </div>
           )}
         </DialogHeader>
-        {["rename", "delete", "share", "move"].includes(value) && (
+        {["rename", "trash", "share", "move"].includes(value) && (
           <DialogFooter className="flex flex-col gap-3 md:flex-row">
             <Button onClick={closeAllModals} className="modal-cancel-button">
               cancel
@@ -246,7 +245,7 @@ const ActionDropdown = ({ file }: { file: FileDocument }) => {
                 setAction(actionItem);
 
                 if (
-                  ["rename", "share", "delete", "details", "move"].includes(
+                  ["rename", "share", "trash", "details", "move"].includes(
                     actionItem.value,
                   )
                 ) {

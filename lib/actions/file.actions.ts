@@ -121,6 +121,7 @@ const createQueries = (
       Query.equal("owner", [currentUser.$id]),
       Query.contains("users", [currentUser.email]),
     ]),
+    Query.equal("trashed", [false]),
   ];
 
   if (types.length > 0) queries.push(Query.equal("type", types));
@@ -172,6 +173,67 @@ export const getFiles = async ({
     });
   } catch (error) {
     handleError(error, "Failed to get files");
+  }
+};
+
+export const getTrashedFiles = async () => {
+  const { databases } = await createAdminClient();
+
+  try {
+    const currentUser = await getCurrentUser();
+
+    if (!currentUser) throw new Error("User not found");
+
+    const files = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.filesCollectionId,
+      [Query.equal("owner", [currentUser.$id]), Query.equal("trashed", [true])],
+    );
+
+    const documentsWithFolders = await attachFolderNames(files.documents);
+
+    return parseStringify({
+      ...files,
+      documents: documentsWithFolders.map(normalizeFile),
+    });
+  } catch (error) {
+    handleError(error, "Failed to get trashed files");
+  }
+};
+
+export const trashFile = async ({ fileId, path }: TrashFileProps) => {
+  const { databases } = await createAdminClient();
+
+  try {
+    const updatedFile = await databases.updateDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.filesCollectionId,
+      fileId,
+      { trashed: true },
+    );
+
+    revalidatePath(path);
+    return parseStringify(normalizeFile(updatedFile));
+  } catch (error) {
+    handleError(error, "Failed to move file to trash");
+  }
+};
+
+export const restoreFile = async ({ fileId, path }: RestoreFileProps) => {
+  const { databases } = await createAdminClient();
+
+  try {
+    const updatedFile = await databases.updateDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.filesCollectionId,
+      fileId,
+      { trashed: false },
+    );
+
+    revalidatePath(path);
+    return parseStringify(normalizeFile(updatedFile));
+  } catch (error) {
+    handleError(error, "Failed to restore file");
   }
 };
 

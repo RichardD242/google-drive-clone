@@ -24,6 +24,11 @@ export const navItems = [
     icon: "/assets/icons/others.svg",
     url: "/others",
   },
+  {
+    name: "Trash",
+    icon: "/assets/icons/trash.svg",
+    url: "/trash",
+  },
 ];
 
 export const actionsDropdownItems = [
@@ -53,7 +58,20 @@ export const actionsDropdownItems = [
     value: "download",
   },
   {
-    label: "Delete",
+    label: "Move to Trash",
+    icon: "/assets/icons/delete.svg",
+    value: "trash",
+  },
+];
+
+export const trashActionsDropdownItems = [
+  {
+    label: "Restore",
+    icon: "/assets/icons/restore.svg",
+    value: "restore",
+  },
+  {
+    label: "Delete Forever",
     icon: "/assets/icons/delete.svg",
     value: "delete",
   },
