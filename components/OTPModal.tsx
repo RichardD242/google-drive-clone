@@ -9,6 +9,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+
 import {
   InputOTP,
   InputOTPGroup,
@@ -19,7 +20,6 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { verifySecret, sendEmailOTP } from "@/lib/actions/user.actions";
 import { useRouter } from "next/navigation";
-
 
 const OtpModal = ({
   accountId,
@@ -56,15 +56,12 @@ const OtpModal = ({
     await sendEmailOTP({ email });
   };
 
-
-
-  
   return (
     <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
       <AlertDialogContent className="shad-alert-dialog">
         <AlertDialogHeader className="relative flex justify-center">
           <AlertDialogTitle className="h2 text-center">
-            enter your otp
+            Enter Your OTP
             <Image
               src="/assets/icons/close-dark.svg"
               alt="close"
@@ -75,7 +72,7 @@ const OtpModal = ({
             />
           </AlertDialogTitle>
           <AlertDialogDescription className="subtitle-2 text-center text-light-100">
-            enter code sent to your emial
+            We&apos;ve sent a code to{" "}
             <span className="pl-1 text-brand">{email}</span>
           </AlertDialogDescription>
         </AlertDialogHeader>
@@ -111,14 +108,14 @@ const OtpModal = ({
             </AlertDialogAction>
 
             <div className="subtitle-2 mt-2 text-center text-light-100">
-              didnt get code?
+              Didn&apos;t get a code?
               <Button
                 type="button"
                 variant="link"
                 className="pl-1 text-brand"
                 onClick={handleResendOtp}
               >
-                click to resend
+                Click to resend
               </Button>
             </div>
           </div>

@@ -1,19 +1,17 @@
 import type { Metadata } from "next";
-import { Poppins, Geist } from "next/font/google";
-import "./globals.css";
-import { cn } from "@/lib/utils";
+import { Poppins } from 'next/font/google'
 
-const geist = Geist({subsets:['latin'],variable:'--font-sans'});
+import "./globals.css";
 
 const poppins = Poppins({
-  weight: ["100","200","300","400"],
-  subsets: ["latin"],
-  variable: "--font-poppins",
-});
+    subsets: ['latin'],
+    weight: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
+    variable: '--font-poppins',
+})
 
 export const metadata: Metadata = {
-  title: "gdc",
-  description: "storage tool",
+  title: "StoreIt",
+  description: "StoreIt - The only storage solution you need.",
 };
 
 export default function RootLayout({
@@ -22,11 +20,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en"
-      className={cn("font-poppins", "antialiased", poppins.variable, "font-sans", geist.variable)}
-    >
-      <body className="min-h-full flex flex-col">{children}</body>
+    <html lang="en">
+      <body
+        className={`${poppins.variable} font-poppins antialiased`}
+      >
+        {children}
+      </body>
     </html>
   );
 }

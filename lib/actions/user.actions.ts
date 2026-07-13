@@ -6,6 +6,7 @@ import { Query, ID } from "node-appwrite";
 import { parseStringify } from "@/lib/utils";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { cache } from "react";
 
 const getUserByEmail = async (email: string) => {
   const { databases } = await createAdminClient();
@@ -54,10 +55,10 @@ export const createAccount = async ({
       appwriteConfig.usersCollectionId,
       ID.unique(),
       {
-        fullName,
+        Fullname: fullName,
         email,
         avatar: "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png",
-        accountId,
+        accountid: accountId,
       },
     );
   }
@@ -90,7 +91,7 @@ export const verifySecret = async ({
   }
 };
 
-export const getCurrentUser = async () => {
+export const getCurrentUser = cache(async () => {
   try {
     const { databases, account } = await createSessionClient();
 
@@ -99,16 +100,22 @@ export const getCurrentUser = async () => {
     const user = await databases.listDocuments(
       appwriteConfig.databaseId,
       appwriteConfig.usersCollectionId,
-      [Query.equal("accountId", result.$id)],
+      [Query.equal("accountid", result.$id)],
     );
 
     if (user.total <= 0) return null;
 
-    return parseStringify(user.documents[0]);
-  } catch (error) {
-    handleError(error, "failed to get user");
+    const document = user.documents[0];
+
+    return parseStringify({
+      ...document,
+      fullName: document.Fullname,
+      accountId: document.accountid,
+    });
+  } catch {
+    return null;
   }
-};
+});
 
 export const signOutUser = async () => {
   const { account } = await createSessionClient();
@@ -127,10 +134,9 @@ export const signInUser = async ({ email }: { email: string }) => {
   try {
     const existingUser = await getUserByEmail(email);
 
-    // User exists, send OTP
     if (existingUser) {
       await sendEmailOTP({ email });
-      return parseStringify({ accountId: existingUser.accountId });
+      return parseStringify({ accountId: existingUser.accountid });
     }
 
     return parseStringify({ accountId: null, error: "User not found" });

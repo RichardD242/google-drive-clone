@@ -59,9 +59,13 @@ const AuthForm = ({ type }: { type: FormType }) => {
             })
           : await signInUser({ email: values.email });
 
-      setAccountId(user.accountId);
+      if (user.error) {
+        setErrorMessage(user.error);
+      } else {
+        setAccountId(user.accountId);
+      }
     } catch {
-      setErrorMessage("failed to make account. try again");
+      setErrorMessage("Failed to create account. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -156,10 +160,12 @@ const AuthForm = ({ type }: { type: FormType }) => {
           </div>
         </form>
       </Form>
+
       {accountId && (
         <OtpModal email={form.getValues("email")} accountId={accountId} />
       )}
     </>
   );
 };
+
 export default AuthForm;
