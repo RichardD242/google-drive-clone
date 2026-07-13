@@ -20,6 +20,7 @@ interface Props {
 
 const FileUploader = ({ ownerId, accountId, className }: Props) => {
   const path = usePathname();
+  const folderId = path.startsWith("/folder/") ? path.split("/folder/")[1] : null;
   const { toast } = useToast();
   const [files, setFiles] = useState<File[]>([]);
 
@@ -44,7 +45,7 @@ const FileUploader = ({ ownerId, accountId, className }: Props) => {
           });
         }
 
-        return uploadFile({ file, ownerId, accountId, path }).then(
+        return uploadFile({ file, ownerId, accountId, path, parent: folderId }).then(
           (uploadedFile) => {
             if (uploadedFile) {
               setFiles((prevFiles) =>
@@ -57,7 +58,7 @@ const FileUploader = ({ ownerId, accountId, className }: Props) => {
 
       await Promise.all(uploadPromises);
     },
-    [ownerId, accountId, path],
+    [ownerId, accountId, folderId, path],
   );
 
   const { getRootProps, getInputProps } = useDropzone({ onDrop });
