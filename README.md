@@ -53,6 +53,18 @@ npm run dev
 
 - go to [gdc](https://google-drive-clone-kappa-murex.vercel.app/sign-in)
 
+## Tutorial and own tweaks
+
+used Javascript Mastery tutorial
+
+own tweaks:
+
+- new custom folder system
+- soft deleting (trash)
+- added move to folder
+- updated the project to work with newer Appwrite versions including ennviroment configuration changes (tutorial was outdated)
+- fixed file preview compatibility
+
 ## ai use
 
 - the tutorial targeted older version of dependencies so i used ai to update configs and to match required enviroment
