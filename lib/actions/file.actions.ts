@@ -37,6 +37,7 @@ export const uploadFile = async ({
   file,
   ownerId,
   accountId,
+  parent,
   path,
 }: UploadFileProps) => {
   const { storage, databases } = await createAdminClient();
@@ -60,6 +61,7 @@ export const uploadFile = async ({
       accountid: accountId,
       users: [],
       bucketField: bucketFile.$id,
+      parent: parent || null,
     };
 
     const newFile = await databases
@@ -87,6 +89,8 @@ const createQueries = (
   searchText: string,
   sort: string,
   limit?: number,
+  parent?: string | null,
+
 ) => {
   const queries = [
     Query.or([
@@ -98,6 +102,10 @@ const createQueries = (
   if (types.length > 0) queries.push(Query.equal("type", types));
   if (searchText) queries.push(Query.contains("name", searchText));
   if (limit) queries.push(Query.limit(limit));
+
+  if (parent !== undefined) {
+    queries.push(parent ? Query.equal("parent", [parent]) : Query.isNull("parent"));
+  }
 
   if (sort) {
     const [sortBy, orderBy] = sort.split("-");
@@ -115,6 +123,7 @@ export const getFiles = async ({
   searchText = "",
   sort = "$createdAt-desc",
   limit,
+  parent,
 }: GetFilesProps) => {
   const { databases } = await createAdminClient();
 
@@ -123,7 +132,7 @@ export const getFiles = async ({
 
     if (!currentUser) throw new Error("User not found");
 
-    const queries = createQueries(currentUser, types, searchText, sort, limit);
+    const queries = createQueries(currentUser, types, searchText, sort, limit, parent);
 
     const files = await databases.listDocuments(
       appwriteConfig.databaseId,
