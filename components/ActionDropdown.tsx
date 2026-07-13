@@ -15,7 +15,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useState } from "react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { actionsDropdownItems } from "@/constants";
 import Link from "next/link";
@@ -24,9 +31,11 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
   deleteFile,
+  moveFile,
   renameFile,
   updateFileUsers,
 } from "@/lib/actions/file.actions";
+import { createFolder, getFolders } from "@/lib/actions/folder.actions";
 import { usePathname } from "next/navigation";
 import { FileDetails, ShareInput } from "@/components/ActionsModalContent";
 
@@ -37,14 +46,28 @@ const ActionDropdown = ({ file }: { file: FileDocument }) => {
   const [name, setName] = useState(file.name);
   const [isLoading, setIsLoading] = useState(false);
   const [emails, setEmails] = useState<string[]>([]);
+  const [folders, setFolders] = useState<FolderDocument[]>([]);
+  const [selectedFolderId, setSelectedFolderId] = useState("");
+  const [newFolderName, setNewFolderName] = useState("");
+  const [isCreatingFolder, setIsCreatingFolder] = useState(false);
 
   const path = usePathname();
+
+  useEffect(() => {
+    if (action?.value !== "move") return;
+
+    getFolders({ parent: null }).then((result) => {
+      if (result) setFolders(result.documents);
+    });
+  }, [action]);
 
   const closeAllModals = () => {
     setIsModalOpen(false);
     setIsDropdownOpen(false);
     setAction(null);
     setName(file.name);
+    setSelectedFolderId("");
+    setNewFolderName("");
   };
 
   const handleAction = async () => {
@@ -58,6 +81,8 @@ const ActionDropdown = ({ file }: { file: FileDocument }) => {
       share: () => updateFileUsers({ fileId: file.$id, emails, path }),
       delete: () =>
         deleteFile({ fileId: file.$id, bucketFileId: file.bucketFileId, path }),
+      move: () =>
+        moveFile({ fileId: file.$id, parent: selectedFolderId || null, path }),
     };
 
     success = await actions[action.value as keyof typeof actions]();
@@ -77,6 +102,27 @@ const ActionDropdown = ({ file }: { file: FileDocument }) => {
 
     if (success) setEmails(updatedEmails);
     closeAllModals();
+  };
+
+  const handleCreateFolder = async () => {
+    if (!newFolderName.trim()) return;
+    setIsCreatingFolder(true);
+
+    const folder = await createFolder({
+      name: newFolderName.trim(),
+      ownerId: file.owner.$id,
+      accountId: file.accountId,
+      parent: null,
+      path,
+    });
+
+    setIsCreatingFolder(false);
+
+    if (folder) {
+      setFolders((prev) => [...prev, folder]);
+      setSelectedFolderId(folder.$id);
+      setNewFolderName("");
+    }
   };
 
   const renderDialogContent = () => {
@@ -110,13 +156,55 @@ const ActionDropdown = ({ file }: { file: FileDocument }) => {
               <span className="delete-file-name">{file.name}</span>?
             </p>
           )}
+          {value === "move" && (
+            <div className="flex flex-col gap-4">
+              {folders.length > 0 && (
+                <Select value={selectedFolderId} onValueChange={setSelectedFolderId}>
+                  <SelectTrigger className="sort-select">
+                    <SelectValue placeholder="Select a folder" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {folders.map((folder) => (
+                      <SelectItem
+                        key={folder.$id}
+                        value={folder.$id}
+                        className="shad-select-item"
+                      >
+                        {folder.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+
+              <div className="flex gap-2">
+                <Input
+                  type="text"
+                  placeholder="Or create a new folder"
+                  value={newFolderName}
+                  onChange={(e) => setNewFolderName(e.target.value)}
+                />
+                <Button
+                  type="button"
+                  onClick={handleCreateFolder}
+                  disabled={!newFolderName.trim() || isCreatingFolder}
+                >
+                  Create
+                </Button>
+              </div>
+            </div>
+          )}
         </DialogHeader>
-        {["rename", "delete", "share"].includes(value) && (
+        {["rename", "delete", "share", "move"].includes(value) && (
           <DialogFooter className="flex flex-col gap-3 md:flex-row">
             <Button onClick={closeAllModals} className="modal-cancel-button">
               cancel
             </Button>
-            <Button onClick={handleAction} className="modal-submit-button">
+            <Button
+              onClick={handleAction}
+              className="modal-submit-button"
+              disabled={value === "move" && !selectedFolderId}
+            >
               <p className="capitalize">{value}</p>
               {isLoading && (
                 <Image
@@ -158,7 +246,7 @@ const ActionDropdown = ({ file }: { file: FileDocument }) => {
                 setAction(actionItem);
 
                 if (
-                  ["rename", "share", "delete", "details"].includes(
+                  ["rename", "share", "delete", "details", "move"].includes(
                     actionItem.value,
                   )
                 ) {

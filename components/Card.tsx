@@ -24,6 +24,11 @@ const Card = ({ file }: { file: FileDocument }) => {
 
       <div className="file-card-details">
         <p className="subtitle-2 line-clamp-1">{file.name}</p>
+        {file.parentName && (
+          <p className="caption line-clamp-1 text-light-200">
+            In: {file.parentName}
+          </p>
+        )}
         <FormattedDateTime
           date={file.$createdAt}
           className="body-2 text-light-100"

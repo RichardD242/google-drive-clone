@@ -4,14 +4,12 @@ import FormattedDateTime from "@/components/FormattedDateTime";
 import FolderActionDropdown from "@/components/FolderActionDropdown";
 
 const FolderCard = ({ folder }: { folder: FolderDocument }) => {
-  
-    return (
-
+  return (
     <div className="file-card">
       <div className="flex justify-between">
         <Link href={`/folder/${folder.$id}`} className="flex items-center gap-3">
           <Image
-            src="/assets/icons/dashboard.svg"
+            src="/assets/icons/folder.svg"
             alt="folder"
             width={40}
             height={40}
@@ -29,7 +27,6 @@ const FolderCard = ({ folder }: { folder: FolderDocument }) => {
           date={folder.$createdAt}
           className="body-2 text-light-100"
         />
-        
       </div>
     </div>
   );

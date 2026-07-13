@@ -33,6 +33,30 @@ const normalizeFile = (doc: Models.Document) => {
   };
 };
 
+const attachFolderNames = async (
+  files: (Models.Document & { parent?: string | null })[],
+) => {
+  const parentIds = [...new Set(files.map((file) => file.parent).filter(Boolean))];
+
+  if (parentIds.length === 0) {
+    return files.map((file) => ({ ...file, parentName: null }));
+  }
+
+  const { databases } = await createAdminClient();
+  const folders = await databases.listDocuments(
+    appwriteConfig.databaseId,
+    appwriteConfig.foldersCollectionId,
+    [Query.equal("$id", parentIds)],
+  );
+
+  const folderNames = new Map(folders.documents.map((folder) => [folder.$id, folder.name]));
+
+  return files.map((file) => ({
+    ...file,
+    parentName: file.parent ? (folderNames.get(file.parent) ?? null) : null,
+  }));
+};
+
 export const uploadFile = async ({
   file,
   ownerId,
@@ -140,9 +164,11 @@ export const getFiles = async ({
       queries,
     );
 
+    const documentsWithFolders = await attachFolderNames(files.documents);
+
     return parseStringify({
       ...files,
-      documents: files.documents.map(normalizeFile),
+      documents: documentsWithFolders.map(normalizeFile),
     });
   } catch (error) {
     handleError(error, "Failed to get files");
@@ -172,6 +198,24 @@ export const renameFile = async ({
     return parseStringify(normalizeFile(updatedFile));
   } catch (error) {
     handleError(error, "Failed to rename file");
+  }
+};
+
+export const moveFile = async ({ fileId, parent, path }: MoveFileProps) => {
+  const { databases } = await createAdminClient();
+
+  try {
+    const updatedFile = await databases.updateDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.filesCollectionId,
+      fileId,
+      { parent },
+    );
+
+    revalidatePath(path);
+    return parseStringify(normalizeFile(updatedFile));
+  } catch (error) {
+    handleError(error, "Failed to move file");
   }
 };
 

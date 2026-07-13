@@ -43,6 +43,11 @@ export const actionsDropdownItems = [
     value: "share",
   },
   {
+    label: "Move to folder",
+    icon: "/assets/icons/folder.svg",
+    value: "move",
+  },
+  {
     label: "Download",
     icon: "/assets/icons/download.svg",
     value: "download",

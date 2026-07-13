@@ -64,6 +64,11 @@ declare global {
     extension: string;
     path: string;
   }
+  interface MoveFileProps {
+    fileId: string;
+    parent: string | null;
+    path: string;
+  }
   interface UpdateFileUsersProps {
     fileId: string;
     emails: string[];
@@ -119,6 +124,7 @@ declare global {
     users: string[];
     bucketFileId: string;
     parent: string | null;
+    parentName: string | null;
   }
 }
 
