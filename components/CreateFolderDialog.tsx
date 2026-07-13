@@ -15,7 +15,7 @@ import {
 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { createFolder } from "@/lib/actions/folder.action";
+import { createFolder } from "@/lib/actions/folder.actions";
 
 interface Props {
     ownerId: string;

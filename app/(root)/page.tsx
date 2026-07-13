@@ -1,18 +1,21 @@
 import Image from "next/image";
 import Link from "next/link";
 
+import FolderCard from "@/components/FolderCard";
+import { getFiles, getTotalSpaceUsed } from "@/lib/actions/file.actions";
+import { getFolders } from "@/lib/actions/folder.actions";
 import ActionDropdown from "@/components/ActionDropdown";
 import { Chart } from "@/components/Chart";
 import { FormattedDateTime } from "@/components/FormattedDateTime";
 import { Thumbnail } from "@/components/Thumbnail";
 import { Separator } from "@/components/ui/separator";
-import { getFiles, getTotalSpaceUsed } from "@/lib/actions/file.actions";
 import { convertFileSize, getUsageSummary } from "@/lib/utils";
 
 const Dashboard = async () => {
-  const [files, totalSpace] = await Promise.all([
+  const [files, totalSpace, folders] = await Promise.all([
     getFiles({ types: [], limit: 10 }),
     getTotalSpaceUsed(),
+    getFolders({ parent: null }),
   ]);
 
   const usageSummary = getUsageSummary(totalSpace);
@@ -53,6 +56,19 @@ const Dashboard = async () => {
             </Link>
           ))}
         </ul>
+      </section>
+
+      <section>
+        <h2 className="h3 xl:h2 text-light-100">Folders</h2>
+        {folders.documents.length > 0 ? (
+          <ul className="mt-5 flex flex-col gap-5">
+            {folders.documents.map((folder: FolderDocument) => (
+              <FolderCard key={folder.$id} folder={folder} />
+            ))}
+          </ul>
+        ) : (
+          <p className="empty-list">no folders yet</p>
+        )}
       </section>
 
       <section className="dashboard-recent-files">
