@@ -5,8 +5,12 @@ import FormattedDateTime from "@/components/FormattedDateTime";
 import ActionDropdown from "@/components/ActionDropdown";
 
 const Card = ({ file }: { file: FileDocument }) => {
+  const handleDragStart = (e: React.DragEvent) => {
+    e.dataTransfer.setData("application/json", JSON.stringify({ id: file.$id, kind: "file" }));
+  };
+
   return (
-    <Link href={file.url} target="_blank" className="file-card">
+    <Link href={file.url} target="_blank" className="file-card" draggable onDragStart={handleDragStart}>
       <div className="flex justify-between">
         <Thumbnail
           type={file.type}
