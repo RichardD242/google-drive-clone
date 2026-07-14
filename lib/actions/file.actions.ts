@@ -368,6 +368,52 @@ export const deleteFile = async ({
   }
 };
 
+export const toggleFavoriteFile = async ({ fileId, favorited, path }: ToggleFavoriteFileProps) => {
+  const { databases } = await createAdminClient();
+
+  try {
+    const updatedFile = await databases.updateDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.filesCollectionId,
+      fileId,
+      { favorited },
+    );
+
+    revalidatePath(path);
+    return parseStringify(normalizeFile(updatedFile));
+  } catch (error) {
+    handleError(error, "failed to favorite");
+  }
+};
+
+export const getFavoriteFiles = async () => {
+  const { databases } = await createAdminClient();
+
+  try {
+    const currentUser = await getCurrentUser();
+    if (!currentUser) throw new Error("user not found");
+
+    const files = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.filesCollectionId,
+      [
+        Query.equal("owner", [currentUser.$id]),
+        Query.equal("favorited", [true]),
+        Query.equal("trashed", [false])
+      ],
+    );
+
+    const documentsWithFolders = await attachFolderNames(files.documents);
+
+    return parseStringify({
+      ...files,
+      documents: documentsWithFolders.map(normalizeFile),
+    });
+  } catch (error) {
+    handleError(error, "failed to get favorite files");
+  }
+};
+
 export async function getTotalSpaceUsed() {
   try {
     const { databases } = await createSessionClient();
