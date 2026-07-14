@@ -6,4 +6,4 @@
 
 - empty all trash button
 
-- fix folder bugs
+- fix folder bugs (done)

@@ -237,6 +237,44 @@ export const restoreFile = async ({ fileId, path }: RestoreFileProps) => {
   }
 };
 
+export const emptyTrash = async () => {
+  const { databases, storage } = await createAdminClient();
+
+  try {
+    const currentUser = await getCurrentUser();
+    if (!currentUser) throw new Error("User not found");
+
+    const [trashedFiles, trashedFolders] = await Promise.all([
+      databases.listDocuments(appwriteConfig.databaseId, appwriteConfig.filesCollectionId, [
+        Query.equal("owner", [currentUser.$id]),
+        Query.equal("trashed", [true]),
+      ]),
+      databases.listDocuments(appwriteConfig.databaseId, appwriteConfig.foldersCollectionId, [
+        Query.equal("owner", [currentUser.$id]),
+        Query.equal("trashed", [true]),
+      ]),
+    ]);
+
+    await Promise.all(
+      trashedFiles.documents.map(async (file) => {
+        await databases.deleteDocument(appwriteConfig.databaseId, appwriteConfig.filesCollectionId, file.$id);
+        await storage.deleteFile(appwriteConfig.bucketId, file.bucketField as string);
+      }),
+    );
+
+    await Promise.all(
+      trashedFolders.documents.map((folder) =>
+        databases.deleteDocument(appwriteConfig.databaseId, appwriteConfig.foldersCollectionId, folder.$id),
+      ),
+    );
+
+    revalidatePath("/trash");
+    return parseStringify({ status: "success" });
+  } catch (error) {
+    handleError(error, "Failed to empty trash");
+  }
+};
+
 export const renameFile = async ({
   fileId,
   name,
