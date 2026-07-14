@@ -278,6 +278,50 @@ export const getTrashedFolders = async () => {
   }
 };
 
+export const toggleFavoriteFolder = async ({ folderId, favorited, path }: ToggleFavoriteFolderProps) => {
+  const { databases } = await createAdminClient();
+
+  try {
+    const updatedFolder = await databases.updateDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.foldersCollectionId,
+      folderId,
+      { favorited },
+    );
+
+    revalidatePath(path);
+    return parseStringify(normalizeFolder(updatedFolder));
+  } catch (error) {
+    handleError(error, "failed to toggle favorite folder");
+  }
+};
+
+export const getFavoriteFolders = async () => {
+  const { databases } = await createAdminClient();
+
+  try {
+    const currentUser = await getCurrentUser();
+    if (!currentUser) throw new Error("user not found");
+
+    const folders = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.foldersCollectionId,
+      [
+        Query.equal("owner", [currentUser.$id]),
+        Query.equal("favorited", [true]),
+        Query.equal("trashed", [false]),
+      ],
+    );
+
+    return parseStringify({
+      ...folders,
+      documents: folders.documents.map(normalizeFolder),
+    });
+  } catch (error) {
+    handleError(error, "failed to get favorite folders");
+  }
+};
+
 export const deleteFolder = async ({ folderId, path }: DeleteFolderProps) => {
   const { databases, storage } = await createAdminClient();
 
