@@ -43,6 +43,7 @@ export const createFolder = async ({
       accountid: accountId,
       parent: parent || null,
       trashed: false,
+      favorited: false,
     };
 
     const newFolder = await databases.createDocument(

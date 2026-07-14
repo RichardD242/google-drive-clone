@@ -3,14 +3,11 @@ import Thumbnail from "@/components/Thumbnail";
 import { convertFileSize } from "@/lib/utils";
 import FormattedDateTime from "@/components/FormattedDateTime";
 import ActionDropdown from "@/components/ActionDropdown";
+import FavoriteStar from "@/components/FavoriteStar";
 
 const Card = ({ file }: { file: FileDocument }) => {
-  const handleDragStart = (e: React.DragEvent) => {
-    e.dataTransfer.setData("application/json", JSON.stringify({ id: file.$id, kind: "file" }));
-  };
-
   return (
-    <Link href={file.url} target="_blank" className="file-card" draggable onDragStart={handleDragStart}>
+    <Link href={file.url} target="_blank" className="file-card">
       <div className="flex justify-between">
         <Thumbnail
           type={file.type}
@@ -21,7 +18,10 @@ const Card = ({ file }: { file: FileDocument }) => {
         />
 
         <div className="flex flex-col items-end justify-between">
-          <ActionDropdown file={file} />
+          <div className="flex items-center gap-2">
+            <FavoriteStar id={file.$id} favorited={file.favorited} kind="file" />
+            <ActionDropdown file={file} />
+          </div>
           <p className="body-1">{convertFileSize(file.size)}</p>
         </div>
       </div>

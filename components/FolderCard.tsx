@@ -6,6 +6,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import FormattedDateTime from "@/components/FormattedDateTime";
 import FolderActionDropdown from "@/components/FolderActionDropdown";
+import FavoriteStar from "@/components/FavoriteStar";
 import { moveFile } from "@/lib/actions/file.actions";
 import { moveFolder } from "@/lib/actions/folder.actions";
 
@@ -62,7 +63,10 @@ const FolderCard = ({ folder }: { folder: FolderDocument }) => {
           />
         </Link>
 
-        <FolderActionDropdown folder={folder} />
+        <div className="flex items-center gap-2">
+          <FavoriteStar id={folder.$id} favorited={folder.favorited} kind="folder" />
+          <FolderActionDropdown folder={folder} />
+        </div>
       </div>
 
       <div className="file-card-details">

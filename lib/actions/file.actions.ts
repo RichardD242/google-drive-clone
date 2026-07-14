@@ -86,6 +86,8 @@ export const uploadFile = async ({
       users: [],
       bucketField: bucketFile.$id,
       parent: parent || null,
+      trashed: false,
+      favorited: false,
     };
 
     const newFile = await databases
