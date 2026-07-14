@@ -14,6 +14,7 @@ declare global {
     owner: Models.Document & { fullName: string };
     accountId: string;
     parent: string | null;
+    trashed: boolean;
   }
 
   interface CreateFolderProps {
@@ -83,6 +84,27 @@ declare global {
     fileId: string;
     path: string;
   }
+
+  interface TrashFolderProps {
+    folderId: string;
+    path: string;
+  }
+
+  interface RestoreFolderProps {
+    folderId: string;
+    path: string;
+  }
+
+  interface MoveFolderProps {
+    folderId: string;
+    parent: string | null;
+    path: string;
+  }
+
+  interface FolderWithPath extends FolderDocument {
+    path: string;
+  }
+
   interface RestoreFileProps {
     fileId: string;
     path: string;
