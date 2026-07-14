@@ -1,32 +1,38 @@
 "use client";
 
 import {
-    Dialog,
-    DialogContent,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
 } from "@/components/ui/dialog";
-
 import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-    DropdownMenuSeparator,
-    DropdownMenuLabel,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-
-import { useState } from "react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { renameFolder, deleteFolder } from "@/lib/actions/folder.actions";
+import { renameFolder, moveFolder, trashFolder, getAllFolders } from "@/lib/actions/folder.actions";
 
 const folderActionItems = [
-    { label: "Rename", icon: "/assets/icons/edit.svg", value: "rename" },
-    { label: "Delete", icon: "/assets/icons/delete.svg", value: "delete" },
+  { label: "Rename", icon: "/assets/icons/edit.svg", value: "rename" },
+  { label: "Move to folder", icon: "/assets/icons/folder.svg", value: "move" },
+  { label: "Move to Trash", icon: "/assets/icons/delete.svg", value: "trash" },
 ];
 
 const FolderActionDropdown = ({ folder }: { folder: FolderDocument }) => {
@@ -35,15 +41,26 @@ const FolderActionDropdown = ({ folder }: { folder: FolderDocument }) => {
   const [action, setAction] = useState<ActionType | null>(null);
   const [name, setName] = useState(folder.name);
   const [isLoading, setIsLoading] = useState(false);
+  const [folders, setFolders] = useState<FolderWithPath[]>([]);
+  const [selectedFolderId, setSelectedFolderId] = useState("");
 
   const path = usePathname();
   const router = useRouter();
+
+  useEffect(() => {
+    if (action?.value !== "move") return;
+
+    getAllFolders().then((result) => {
+      if (result) setFolders(result.documents.filter((item: FolderWithPath) => item.$id !== folder.$id));
+    });
+  }, [action, folder.$id]);
 
   const closeAllModals = () => {
     setIsModalOpen(false);
     setIsDropdownOpen(false);
     setAction(null);
     setName(folder.name);
+    setSelectedFolderId("");
   };
 
   const handleAction = async () => {
@@ -54,9 +71,17 @@ const FolderActionDropdown = ({ folder }: { folder: FolderDocument }) => {
       await renameFolder({ folderId: folder.$id, name, path });
     }
 
-    if (action.value === "delete") {
-      await deleteFolder({ folderId: folder.$id, path });
-      router.push(path.startsWith("/folder/") ? "/" : path);
+    if (action.value === "move") {
+      await moveFolder({
+        folderId: folder.$id,
+        parent: selectedFolderId === "root" ? null : selectedFolderId,
+        path,
+      });
+    }
+
+    if (action.value === "trash") {
+      await trashFolder({ folderId: folder.$id, path });
+      if (path === `/folder/${folder.$id}`) router.push("/");
     }
 
     closeAllModals();
@@ -80,18 +105,39 @@ const FolderActionDropdown = ({ folder }: { folder: FolderDocument }) => {
               onChange={(e) => setName(e.target.value)}
             />
           )}
-          {value === "delete" && (
+          {value === "trash" && (
             <p className="delete-confirmation">
-              are you sure you want to delete{` `}
-              <span className="delete-file-name">{folder.name}</span>?
+              are you sure you want to move{` `}
+              <span className="delete-file-name">{folder.name}</span> to trash?
             </p>
+          )}
+          {value === "move" && (
+            <Select value={selectedFolderId} onValueChange={setSelectedFolderId}>
+              <SelectTrigger className="sort-select">
+                <SelectValue placeholder="Select a folder" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="root" className="shad-select-item">
+                  Root
+                </SelectItem>
+                {folders.map((item) => (
+                  <SelectItem key={item.$id} value={item.$id} className="shad-select-item">
+                    {item.path}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           )}
         </DialogHeader>
         <DialogFooter className="flex flex-col gap-3 md:flex-row">
           <Button onClick={closeAllModals} className="modal-cancel-button">
             cancel
           </Button>
-          <Button onClick={handleAction} className="modal-submit-button">
+          <Button
+            onClick={handleAction}
+            className="modal-submit-button"
+            disabled={value === "move" && !selectedFolderId}
+          >
             <p className="capitalize">{value}</p>
             {isLoading && (
               <Image

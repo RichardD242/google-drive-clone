@@ -36,6 +36,7 @@ import {
   updateFileUsers,
 } from "@/lib/actions/file.actions";
 import { createFolder, getFolders } from "@/lib/actions/folder.actions";
+import { getAllFolders } from "@/lib/actions/folder.actions";
 import { usePathname } from "next/navigation";
 import { FileDetails, ShareInput } from "@/components/ActionsModalContent";
 
@@ -46,7 +47,7 @@ const ActionDropdown = ({ file }: { file: FileDocument }) => {
   const [name, setName] = useState(file.name);
   const [isLoading, setIsLoading] = useState(false);
   const [emails, setEmails] = useState<string[]>([]);
-  const [folders, setFolders] = useState<FolderDocument[]>([]);
+  const [folders, setFolders] = useState<FolderWithPath[]>([]);
   const [selectedFolderId, setSelectedFolderId] = useState("");
   const [newFolderName, setNewFolderName] = useState("");
   const [isCreatingFolder, setIsCreatingFolder] = useState(false);
@@ -56,7 +57,7 @@ const ActionDropdown = ({ file }: { file: FileDocument }) => {
   useEffect(() => {
     if (action?.value !== "move") return;
 
-    getFolders({ parent: null }).then((result) => {
+    getAllFolders().then((result) => {
       if (result) setFolders(result.documents);
     });
   }, [action]);
@@ -169,7 +170,7 @@ const ActionDropdown = ({ file }: { file: FileDocument }) => {
                         value={folder.$id}
                         className="shad-select-item"
                       >
-                        {folder.name}
+                        {folder.path}
                       </SelectItem>
                     ))}
                   </SelectContent>
