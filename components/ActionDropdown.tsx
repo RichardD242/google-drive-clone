@@ -35,8 +35,7 @@ import {
   trashFile,
   updateFileUsers,
 } from "@/lib/actions/file.actions";
-import { createFolder, getFolders } from "@/lib/actions/folder.actions";
-import { getAllFolders } from "@/lib/actions/folder.actions";
+import { createFolder, getAllFolders } from "@/lib/actions/folder.actions";
 import { usePathname } from "next/navigation";
 import { FileDetails, ShareInput } from "@/components/ActionsModalContent";
 
