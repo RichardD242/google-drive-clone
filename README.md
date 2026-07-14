@@ -64,6 +64,8 @@ own tweaks:
 - added move to folder
 - updated the project to work with newer Appwrite versions including ennviroment configuration changes (tutorial was outdated)
 - fixed file preview compatibility
+- added drag and drop
+- added favorites /favorite for easy access
 
 ## ai use
 
