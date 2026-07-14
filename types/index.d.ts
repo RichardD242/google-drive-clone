@@ -15,6 +15,7 @@ declare global {
     accountId: string;
     parent: string | null;
     trashed: boolean;
+    favorited: boolean;
   }
 
   interface CreateFolderProps {
@@ -156,7 +157,21 @@ declare global {
     parent: string | null;
     parentName: string | null;
     trashed: boolean;
+    favorited: boolean;
   }
+
+  interface ToggleFavoriteFileProps {
+    fileId: string;
+    favorited: boolean;
+    path: string;
+  }
+
+  interface ToggleFavoriteFolderProps {
+    folderId: string;
+    favorited: boolean;
+    path: string;
+  }
+  
 }
 
 export {};
